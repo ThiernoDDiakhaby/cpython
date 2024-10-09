@@ -37,4 +37,7 @@ jobs:
           cd D:\a\<repository-name>\<repository-name>\  # Assurez-vous d'être dans le bon répertoire
           .\PCbuild\install.exe /Q /INCLUDE=ALL
       - name: Upload Installer
-        uses: actions/upload-artifact@v
+        uses: actions/upload-artifact@v2  # Utilisez une version valide
+        with:
+          name: python-installer
+          path: .\PCbuild\python.exe
