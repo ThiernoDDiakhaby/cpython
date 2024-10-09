@@ -30,14 +30,11 @@ jobs:
           Start-Process -Wait -FilePath vs_buildtools.exe -ArgumentList '--quiet --wait --norestart --nocache --install --add Microsoft.VisualStudio.Workload.VCTools'
       - name: Build CPython
         run: |
-          cd path/to/cpython  # Change this to the actual path where the CPython source is located
+          cd D:\a\<repository-name>\<repository-name>\  # Remplacez ceci par le bon chemin
           .\PCbuild\build.bat -c Release
       - name: Create Installer
         run: |
-          cd path/to/cpython  # Ensure you are in the right directory
+          cd D:\a\<repository-name>\<repository-name>\  # Assurez-vous d'être dans le bon répertoire
           .\PCbuild\install.exe /Q /INCLUDE=ALL
       - name: Upload Installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-installer
-          path: .\PCbuild\python.exe
+        uses: actions/upload-artifact@v
