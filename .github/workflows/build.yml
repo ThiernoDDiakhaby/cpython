@@ -24,20 +24,20 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Python 3.11.10
-        run: |
-          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.11.10/python-3.11.10-amd64.exe -OutFile python-installer.exe
-          Start-Process python-installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait
-      - name: Check Python Version
-        run: python --version
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Install MSVC Build Tools
         run: |
           choco install visualstudio2019buildtools --version 16.11.4 --params "'/NoRestart /IncludeOptional'"
       - name: Build CPython
         run: |
+          cd path/to/cpython  # Change this to the actual path where the CPython source is located
           .\PCbuild\build.bat -c Release
       - name: Create Installer
         run: |
+          cd path/to/cpython  # Ensure you are in the right directory
           .\PCbuild\install.exe /Q /INCLUDE=ALL
       - name: Upload Installer
         uses: actions/upload-artifact@v4
