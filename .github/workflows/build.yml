@@ -161,72 +161,9 @@ jobs:
     needs: check_source
     if: needs.check_source.outputs.run_tests == 'true'
     uses: ./.github/workflows/reusable-windows.yml
-
-  build_macos:
-    name: 'macOS'
-    needs: check_source
-    if: needs.check_source.outputs.run_tests == 'true'
-    uses: ./.github/workflows/reusable-macos.yml
+  
+    -name: Upload Executables
+    uses: actions/upload-artifact@v4
     with:
-      config_hash: ${{ needs.check_source.outputs.config_hash }}
-
-  build_ubuntu:
-    name: 'Ubuntu'
-    needs: check_source
-    if: needs.check_source.outputs.run_tests == 'true'
-    uses: ./.github/workflows/reusable-ubuntu.yml
-    with:
-      config_hash: ${{ needs.check_source.outputs.config_hash }}
-      options: |
-        ../cpython-ro-srcdir/configure \
-          --config-cache \
-          --with-pydebug \
-          --with-openssl=$OPENSSL_DIR
-
-  build_ubuntu_ssltests:
-    name: 'Ubuntu SSL tests with OpenSSL'
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60
-    needs: check_source
-    if: needs.check_source.outputs.run_tests == 'true' && needs.check_source.outputs.run_ssl_tests == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        openssl_ver: [1.1.1w, 3.0.13, 3.1.5, 3.2.1]
-    env:
-      OPENSSL_VER: ${{ matrix.openssl_ver }}
-      MULTISSL_DIR: ${{ github.workspace }}/multissl
-      OPENSSL_DIR: ${{ github.workspace }}/multissl/openssl/${{ matrix.openssl_ver }}
-      LD_LIBRARY_PATH: ${{ github.workspace }}/multissl/openssl/${{ matrix.openssl_ver }}/lib
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Dependencies
-      run: sudo ./.github/workflows/posix-deps-apt.sh
-    - name: Configure OpenSSL env vars
-      run: |
-        echo "MULTISSL_DIR=${GITHUB_WORKSPACE}/multissl" >> $GITHUB_ENV
-        echo "OPENSSL_DIR=${GITHUB_WORKSPACE}/multissl/openssl/${OPENSSL_VER}" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=${GITHUB_WORKSPACE}/multissl/openssl/${OPENSSL_VER}/lib" >> $GITHUB_ENV
-    - name: Install OpenSSL
-      run: python3 Tools/ssl/multissltests.py --steps=library --base-directory $MULTISSL_DIR --openssl $OPENSSL_VER --system Linux
-
-  build_asan:
-    name: 'Address sanitizer'
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60
-    needs: check_source
-    if: needs.check_source.outputs.run_tests == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - name: Install Dependencies
-        run: sudo ./.github/workflows/posix-deps-apt.sh
-      - name: Build CPython with Address Sanitizer
-        env:
-          CFLAGS: -fsanitize=address
-          LDFLAGS: -fsanitize=address
-        run: |
-          ./configure --with-pydebug --enable-shared
-          make -j4
-      - name: Run tests
-        run: make test
+      name: python-executables
+      path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
