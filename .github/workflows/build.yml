@@ -13,31 +13,41 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+  actions: write  # Ensure actions have permissions to upload artifacts
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-reusable
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   build_windows:
     name: 'Build Windows Installer'
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.10'
+      
       - name: Install MSVC Build Tools
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
-          Start-Process -Wait -FilePath vs_buildtools.exe -ArgumentList '--quiet --wait --norestart --nocache --install --add Microsoft.VisualStudio.Workload.VCTools'
+          choco install visualstudio2019buildtools --version 16.11.4 --params "'/NoRestart'"
+
       - name: Build CPython
         run: |
-          cd D:\a\<repository-name>\<repository-name>\  # Remplacez ceci par le bon chemin
           .\PCbuild\build.bat -c Release
+
       - name: Create Installer
         run: |
-          cd D:\a\<repository-name>\<repository-name>\  # Assurez-vous d'être dans le bon répertoire
           .\PCbuild\install.exe /Q /INCLUDE=ALL
-      - name: Upload Installer
-        uses: actions/upload-artifact@v3  # Mettez à jour vers v3
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: python-installer
           path: .\PCbuild\python.exe
