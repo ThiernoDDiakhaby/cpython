@@ -156,16 +156,19 @@ jobs:
       - name: Check exported libpython symbols
         run: make smelly
 
-    build_windows:
-      name: 'Windows'
-      needs: check_source
-      if: needs.check_source.outputs.run_tests == 'true'
-      uses: ./.github/workflows/reusable-windows.yml
+  build_windows:
+    name: 'Windows'
+    needs: check_source
+    if: needs.check_source.outputs.run_tests == 'true'
+    uses: ./.github/workflows/reusable-windows.yml
 
-      steps:  # This line was missing
-        - name: Upload Executables  # Fixing the hyphen and spacing
-          uses: actions/upload-artifact@v4
-          with:
-            name: python-executables
-            path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
-
+  download_abi:
+    name: 'Download ABI Artifact'
+    needs: check_abi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download ABI files
+        uses: actions/download-artifact@v4
+        with:
+          name: abi-data
+          path: ./downloaded-abi
