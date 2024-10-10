@@ -43,10 +43,20 @@ jobs:
           cd cpython
           .\PCbuild\build.bat --pgo
 
+      - name: List Files in PCbuild Directory
+        run: |
+          cd cpython\PCbuild
+          Get-ChildItem
+
       - name: Create Installer
         run: |
           cd cpython
-          .\PCbuild\install.exe /Q /INCLUDE=ALL
+          if (Test-Path .\PCbuild\install.exe) {
+              .\PCbuild\install.exe /Q /INCLUDE=ALL
+          } else {
+              Write-Error "install.exe was not found. Build may have failed."
+              exit 1
+          }
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
