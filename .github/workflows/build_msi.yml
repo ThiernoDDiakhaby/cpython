@@ -1,51 +1,27 @@
-name: TestsMSI
+name: Build MSI
 
 on:
   workflow_dispatch:
   push:
     branches:
-    - 'main'
-    - '3.11'
-    paths:
-    - 'Tools/msi/**'
+      - 'main'
+      - '3.11'
   pull_request:
     branches:
-    - 'main'
-    - '3.11'
-    paths:
-    - 'Tools/msi/**'
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+      - 'main'
+      - '3.11'
 
 jobs:
-  build_win32:
-    name: 'Windows (x86) Installer'
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build CPython installer
-      run: .\Tools\msi\build.bat -x86
-
-  build_win_amd64:
-    name: 'Windows (x64) Installer'
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build CPython installer
-      run: .\Tools\msi\build.bat -x64
-
   build_win_arm64:
     name: 'Windows (ARM64) Installer'
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
-    - uses: actions/checkout@v4
-    - name: Build CPython installer
-      run: .\Tools\msi\build.bat -arm64
+      - uses: actions/checkout@v4
+      - name: Build CPython installer
+        run: .\Tools\msi\build.bat -arm64
+      - name: Publish MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-arm64-installer
+          path: path\to\your\msi\output\*.msi # Change this path to the output directory of the MSI file
