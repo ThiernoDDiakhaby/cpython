@@ -96,7 +96,7 @@ jobs:
         with:
           name: python-installer
           path: .\PCbuild\python.exe
-
+jobs:
     build_win_arm64:
       name: 'Windows (ARM64) Installer'
       runs-on: windows-latest
