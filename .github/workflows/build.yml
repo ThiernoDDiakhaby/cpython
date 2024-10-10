@@ -42,11 +42,11 @@ jobs:
         run: |
           cd cpython
           .\PCbuild\build.bat --pgo
-          - name: Upload Executables
-          uses: actions/upload-artifact@v4
-          with:
-            name: python-executables
-            path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
+      - name: Upload Executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-executables
+          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
         
 
       - name: List Files in PCbuild Directory
