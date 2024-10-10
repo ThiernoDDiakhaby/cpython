@@ -42,6 +42,10 @@ jobs:
         run: |
           cd cpython
           .\PCbuild\build.bat -c Release
+          if (-Not (Test-Path .\PCbuild\install.exe)) {
+              Write-Error "install.exe was not created. Build may have failed."
+              exit 1
+          }
 
       - name: Create Installer
         run: |
