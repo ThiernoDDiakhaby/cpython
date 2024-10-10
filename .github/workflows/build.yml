@@ -28,15 +28,33 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
       
-      - name: Download CPython Source
-        run: |
-          git clone --branch v3.11.10 https://github.com/python/cpython.git
-          cd cpython
+      - name: Cache Visual Studio Build Tools
+        uses: actions/cache@v3
+        with:
+          path: vs_buildtools.exe
+          key: vs-build-tools-${{ runner.os }}-v1
+          restore-keys: |
+            vs-build-tools-${{ runner.os }}-
 
       - name: Install Visual Studio Build Tools
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
           Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
+
+      - name: Cache CPython Source
+        uses: actions/cache@v3
+        with:
+          path: cpython
+          key: cpython-${{ runner.os }}-v1
+          restore-keys: |
+            cpython-${{ runner.os }}-
+
+      - name: Download CPython Source
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --branch 3.11 https://github.com/python/cpython.git
+          cd cpython
 
       - name: Build CPython
         run: |
