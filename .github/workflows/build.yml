@@ -1,39 +1,171 @@
-name: Build Python
+name: Tests
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - 3.11
+      - 'main'
+      - '3.11'
   pull_request:
     branches:
-      - 3.11
+      - 'main'
+      - '3.11'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-reusable
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: windows-latest
+  check_source:
+    name: 'Check for source changes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      run-docs: ${{ steps.docs-changes.outputs.run-docs || false }}
+      run_tests: ${{ steps.check.outputs.run_tests }}
+      run_ssl_tests: ${{ steps.check.outputs.run_ssl_tests }}
+      config_hash: ${{ steps.config_hash.outputs.hash }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - name: Check for source changes
+        id: check
+        run: |
+          if [ -z "$GITHUB_BASE_REF" ]; then
+            echo "run_tests=true" >> $GITHUB_OUTPUT
+            echo "run_ssl_tests=true" >> $GITHUB_OUTPUT
+          else
+            git fetch origin $GITHUB_BASE_REF --depth=1
+            git diff --name-only origin/$GITHUB_BASE_REF.. | grep -qvE '(\.rst$|^Doc|^Misc|^\.pre-commit-config\.yaml$|\.ruff\.toml$)' && echo "run_tests=true" >> $GITHUB_OUTPUT || true
+            git diff --name-only origin/$GITHUB_BASE_REF.. | grep -qE '(ssl|hashlib|hmac|^.github)' && echo "run_ssl_tests=true" >> $GITHUB_OUTPUT || true
+          fi
+      - name: Compute hash for config cache key
+        id: config_hash
+        run: |
+          echo "hash=${{ hashFiles('configure', 'configure.ac', '.github/workflows/build.yml') }}" >> $GITHUB_OUTPUT
+      - name: Get a list of the changed documentation-related files
+        if: github.event_name == 'pull_request'
+        id: changed-docs-files
+        uses: Ana06/get-changed-files@v2.3.0
         with:
-          python-version: '3.11'
-
-      - name: Install required tools
+          filter: |
+            Doc/**
+            Misc/**
+            .github/workflows/reusable-docs.yml
+          format: csv
+      - name: Check for docs changes
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.changed-docs-files.outputs.added_modified_renamed != ''
+        id: docs-changes
         run: |
-          choco install visualstudio2019community --params "--add CMake --add WebDevelopmentBuildTools"
-          choco install git
-          choco install ninja
-          choco install windows-sdk-10
+          echo "run-docs=true" >> "${GITHUB_OUTPUT}"
 
-      - name: Build Python
-        run: |
-          git submodule update --init
-          ./configure --with-embed=static --enable-shared
-          msbuild /p:Configuration=Release /p:Platform=x64 PCBuild\python.sln
+  check-docs:
+    name: Docs
+    needs: check_source
+    if: fromJSON(needs.check_source.outputs.run-docs)
+    uses: ./.github/workflows/reusable-docs.yml
 
-      - name: Build MSI
+  check_abi:
+    name: 'Check if the ABI has changed'
+    runs-on: ubuntu-20.04
+    needs: check_source
+    if: needs.check_source.outputs.run_tests == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install dependencies
         run: |
-          msbuild /p:Configuration=Release PCBuild\pythonw.sln
-          msbuild /p:Configuration=Release PCBuild\msi\python.msi
+            sudo ./.github/workflows/posix-deps-apt.sh
+            sudo apt-get install -yq abigail-tools
+      - name: Build CPython
+        env:
+          CFLAGS: -g3 -O0
+        run: |
+          ./configure --enable-shared
+          make -j4
+      - name: Check for changes in the ABI
+        id: check
+        run: |
+          if ! make check-abidump; then
+            echo "Generated ABI file is not up to date."
+            echo "Please add the release manager of this branch as a reviewer of this PR."
+            echo ""
+            echo "The up to date ABI file should be attached to this build as an artifact."
+            echo ""
+            echo "To learn more about this check: https://devguide.python.org/setup/#regenerate-the-abi-dump"
+            echo ""
+            exit 1
+          fi
+      - name: Generate updated ABI files
+        if: ${{ failure() && steps.check.conclusion == 'failure' }}
+        run: |
+          make regen-abidump
+      - uses: actions/upload-artifact@v4
+        name: Publish updated ABI files
+        if: ${{ failure() && steps.check.conclusion == 'failure' }}
+        with:
+          name: abi-data
+          path: ./Doc/data/*.abi
+
+  check_generated_files:
+    name: 'Check if generated files are up to date'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: check_source
+    if: needs.check_source.outputs.run_tests == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Runner image version
+        run: echo "IMAGE_VERSION=${ImageVersion}" >> $GITHUB_ENV
+      - name: Restore config.cache
+        uses: actions/cache@v4
+        with:
+          path: config.cache
+          key: ${{ github.job }}-${{ runner.os }}-${{ env.IMAGE_VERSION }}-${{ needs.check_source.outputs.config_hash }}-${{ env.pythonLocation }}
+      - name: Install Dependencies
+        run: sudo ./.github/workflows/posix-deps-apt.sh
+      - name: Check Autoconf version 2.69 and aclocal 1.16.3
+        run: |
+          grep "Generated by GNU Autoconf 2.69" configure
+          grep "aclocal 1.16.3" aclocal.m4
+          grep -q "runstatedir" configure
+          grep -q "PKG_PROG_PKG_CONFIG" aclocal.m4
+      - name: Configure CPython
+        run: |
+          ./configure --config-cache --with-pydebug --enable-shared
+      - name: Build CPython
+        run: |
+          make -j4 regen-all
+      - name: Check for changes
+        run: |
+          git add -u
+          changes=$(git status --porcelain)
+          if test -n "$changes"; then
+            echo "Generated files not up to date."
+            echo "$changes"
+            git diff --staged || true
+            exit 1
+          fi
+      - name: Check exported libpython symbols
+        run: make smelly
+
+    build_windows:
+      name: 'Windows'
+      needs: check_source
+      if: needs.check_source.outputs.run_tests == 'true'
+      uses: ./.github/workflows/reusable-windows.yml
+
+      steps:  # This line was missing
+        - name: Upload Executables  # Fixing the hyphen and spacing
+          uses: actions/upload-artifact@v4
+          with:
+            name: python-executables
+            path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
+
