@@ -41,7 +41,7 @@ jobs:
       - name: Build CPython
         run: |
           cd cpython
-          .\PCbuild\build.bat --pgo --p build_installer
+          .\PCbuild\build.bat --pgo --build-installer
       - name: Upload Executables
         uses: actions/upload-artifact@v4
         with:
