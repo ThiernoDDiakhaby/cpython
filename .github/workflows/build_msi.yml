@@ -24,4 +24,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-arm64-installer
-          path: path\to\your\msi\output\*.msi # Change this path to the output directory of the MSI file
+          path: cpython\PCbuild\arm64\*.msi

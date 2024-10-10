@@ -71,38 +71,6 @@ jobs:
         with:
           name: python-executables
           path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
-      
-      - name: List Files in PCbuild Directory
-        run: |
-          cd cpython\PCbuild
-          Get-ChildItem
-
-      - name: Vérifier l'existence de l'installateur
-        run: |
-          cd cpython\PCbuild
-          Get-ChildItem  # Liste tous les fichiers dans le répertoire pour le débogage
-          if (!(Test-Path install.exe)) {
-            Write-Error "install.exe n'a pas été généré. La compilation a échoué."
-            exit 1
-          }
-
-      - name: Exécuter l'installateur
-        run: |
-          cd cpython\PCbuild
-          .\install.exe /Q /INCLUDE=ALL
-            
-      - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-installer
-          path: .\PCbuild\python.exe
-
-      - name: Cloner le dépôt
-        uses: actions/checkout@v4
-      
-      - name: Compiler CPython pour ARM64
-        run: |
-          .\Tools\msi\build.bat -arm64
           
       - name: Télécharger l'installateur MSI ARM64
         uses: actions/upload-artifact@v4
