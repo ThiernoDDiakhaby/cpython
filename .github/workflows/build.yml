@@ -41,7 +41,7 @@ jobs:
       - name: Build CPython
         run: |
           cd cpython
-          .\PCbuild\build.bat -c Release -v:diag
+          .\PCbuild\build.bat -c Release -v:diag --pgo
           # Vérification des fichiers dans le répertoire PCbuild
           Get-ChildItem .\PCbuild\*
           if (-Not (Test-Path .\PCbuild\install.exe)) {
