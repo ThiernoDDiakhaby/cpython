@@ -42,21 +42,28 @@ jobs:
         run: |
           cd cpython
           .\PCbuild\build.bat --pgo
+          - name: Upload Executables
+          uses: actions/upload-artifact@v4
+          with:
+            name: python-executables
+            path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
+        
 
       - name: List Files in PCbuild Directory
         run: |
           cd cpython\PCbuild
           Get-ChildItem
 
-      - name: Create Installer
+      - name: Créer l'installateur
         run: |
           cd cpython
           if (Test-Path .\PCbuild\install.exe) {
               .\PCbuild\install.exe /Q /INCLUDE=ALL
-          } else {
-              Write-Error "install.exe was not found. Build may have failed."
-              exit 1
-          }
+            } else {
+                Write-Error "install.exe n'a pas été trouvé. La compilation a peut-être échoué."
+                exit 1
+            }
+        
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
