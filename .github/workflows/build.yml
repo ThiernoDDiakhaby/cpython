@@ -13,8 +13,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-  actions: write  # Ensure actions have permissions to upload artifacts
+  actions: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -34,9 +33,10 @@ jobs:
           git clone --branch v3.11.10 https://github.com/python/cpython.git
           cd cpython
 
-      - name: Set up Visual Studio Build Tools
+      - name: Install Visual Studio Build Tools
         run: |
-          choco install visualstudio2019buildtools --version 16.11.4 --params "'/NoRestart'"
+          Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
+          Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
 
       - name: Build CPython
         run: |
