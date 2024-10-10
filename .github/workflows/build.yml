@@ -59,12 +59,12 @@ jobs:
       - name: Build CPython
         run: |
           cd cpython
-          .\PCbuild\build.bat --pgo
+          .\PCbuild\build.bat --pgo || (Write-Error "Build failed. Check the logs for details." && exit 1)
 
       - name: Générer l'installateur CPython
         run: |
           cd cpython
-          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe" "PCbuild\pcbuild.proj" /p:Configuration=Release /t:Build /p:Platform=x64
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe" "PCbuild\pcbuild.proj" /p:Configuration=Release /t:Build /p:Platform=x64 || (Write-Error "Installer generation failed. Check the logs for details." && exit 1)
 
       - name: Upload Executables
         uses: actions/upload-artifact@v4
@@ -80,6 +80,7 @@ jobs:
       - name: Vérifier l'existence de l'installateur
         run: |
           cd cpython\PCbuild
+          Get-ChildItem  # Liste tous les fichiers dans le répertoire pour le débogage
           if (!(Test-Path install.exe)) {
             Write-Error "install.exe n'a pas été généré. La compilation a échoué."
             exit 1
