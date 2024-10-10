@@ -42,10 +42,12 @@ jobs:
         run: |
           cd cpython
           .\PCbuild\build.bat -c Release
+          Get-ChildItem .\PCbuild\*  # Lister les fichiers dans le répertoire pour le débogage
           if (-Not (Test-Path .\PCbuild\install.exe)) {
               Write-Error "install.exe was not created. Build may have failed."
               exit 1
           }
+
 
       - name: Create Installer
         run: |
