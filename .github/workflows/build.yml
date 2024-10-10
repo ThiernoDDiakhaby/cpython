@@ -41,8 +41,9 @@ jobs:
       - name: Build CPython
         run: |
           cd cpython
-          .\PCbuild\build.bat -c Release
-          Get-ChildItem .\PCbuild\*  # Lister les fichiers dans le répertoire pour le débogage
+          .\PCbuild\build.bat -c Release -v:diag
+          # Vérification des fichiers dans le répertoire PCbuild
+          Get-ChildItem .\PCbuild\*
           if (-Not (Test-Path .\PCbuild\install.exe)) {
               Write-Error "install.exe was not created. Build may have failed."
               exit 1
