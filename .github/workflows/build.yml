@@ -36,7 +36,7 @@ jobs:
       - name: Install Visual Studio Build Tools
         run: |
           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
-          Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
+          Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools", "--add", "Microsoft.VisualStudio.Component.VC142.x86.x64", "--add", "Microsoft.VisualStudio.Component.VC143.x86.x64" -NoNewWindow -Wait
 
       - name: Install WiX Toolset
         run: |
@@ -68,7 +68,7 @@ jobs:
       - name: Build Python MSI installer
         run: |
           cd cpython
-          .\PCbuild\build.bat
+          .\Tools\msi\build.bat
 
       - name: Upload all Artifacts last
         uses: actions/upload-artifact@v4
