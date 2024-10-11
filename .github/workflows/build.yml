@@ -25,7 +25,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Cloner le dépôt
+      - name: Checkout the repository
         uses: actions/checkout@v4
       
       - name: Mise en cache des outils de compilation Visual Studio
