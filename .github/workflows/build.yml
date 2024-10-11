@@ -59,19 +59,18 @@ jobs:
           cd cpython
           .\PCbuild\build.bat --pgo
 
-      - name: Generate Documentation
+      - name: Build Python externa MSI installer
         run: |
           cd cpython
-          # Assurez-vous que la documentation est générée
-          make -C Doc html
+          .\Tools\msi\get_externals.bat
 
-      - name: Build Documentation MSI installer
+      - name: Build Python MSI installer
         run: |
           cd cpython
-          msbuild doc.wixproj /p:Configuration=Release
+          .\Tools\msi\build.bat
 
-      - name: Upload all Artifacts
+      - name: Upload all Artifacts last
         uses: actions/upload-artifact@v4
         with:
-          name: python-installer-artifacts
-          path: D:\a\cpython\cpython\*  # Mettez à jour ce chemin si nécessaire
+          name: python-all-last
+          path: D:\a\cpython\cpython\*
