@@ -61,9 +61,9 @@ jobs:
           path: D:\a\cpython\cpython\cpython\PCbuild\amd64\*
 
       - name: List Files in PCbuild Directory
-              run: |
-                cd cpython\PCbuild
-                Get-ChildItem
+        run: |
+          cd cpython\PCbuild
+          Get-ChildItem
                 
       - name: Vérification de l'existence de l'installateur
         run: |
