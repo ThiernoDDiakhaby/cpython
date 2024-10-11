@@ -21,47 +21,33 @@ concurrency:
 
 jobs:
   build_windows:
-    name: 'Compilation et génération de l installateur Windows'
+    name: 'Build Windows Installer'
     runs-on: windows-latest
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
       
-      - name: Mise en cache des outils de compilation Visual Studio
-        uses: actions/cache@v3
-        with:
-          path: |
-            C:\Program Files (x86)\Microsoft Visual Studio
-            C:\Program Files\Microsoft Visual Studio
-          key: vs-build-tools-${{ runner.os }}-v1
-          restore-keys: |
-            vs-build-tools-${{ runner.os }}-
-      
-      - name: Installer Visual Studio Build Tools si non en cache
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Download CPython Source
+        run: |
+          git clone --branch v3.11.10 https://github.com/python/cpython.git
+          cd cpython
+
+      - name: Install Visual Studio Build Tools
         run: |
           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
           Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
 
-      - name: Télécharger et préparer CPython si non en cache
-        uses: actions/cache@v3
-        with:
-          path: cpython
-          key: cpython-${{ runner.os }}-v1
-          restore-keys: |
-            cpython-${{ runner.os }}-
-      
-      - name: Download CPython Source
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          git clone --branch 3.11 https://github.com/python/cpython.git
-          cd cpython
-
-      - name: Compiler CPython (x64)
+      - name: Build CPython
         run: |
           cd cpython
           .\PCbuild\build.bat -p x64
+      - name: Upload Executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-executables
+          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
+        
           
       - name: Générer l'installateur CPython
         run: |
@@ -72,8 +58,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: executables-python
-          path: cpython\PCbuild\amd64\*
+          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\*
 
+      - name: List Files in PCbuild Directory
+              run: |
+                cd cpython\PCbuild
+                Get-
+                
       - name: Vérification de l'existence de l'installateur
         run: |
           cd cpython\PCbuild
