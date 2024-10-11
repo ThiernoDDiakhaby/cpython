@@ -59,19 +59,19 @@ jobs:
           cd cpython
           .\PCbuild\build.bat --pgo
 
-      - name: Upload all Artifacts first
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-all-first
-          path: D:\a\cpython\cpython\*
-
-      - name: Build Python MSI installer
+      - name: Generate Documentation
         run: |
           cd cpython
-          .\Tools\msi\build.bat
+          # Assurez-vous que la documentation est générée
+          make -C Doc html
 
-      - name: Upload all Artifacts last
+      - name: Build Documentation MSI installer
+        run: |
+          cd cpython
+          msbuild doc.wixproj /p:Configuration=Release
+
+      - name: Upload all Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: python-all-last
-          path: D:\a\cpython\cpython\*
+          name: python-installer-artifacts
+          path: D:\a\cpython\cpython\*  # Mettez à jour ce chemin si nécessaire
