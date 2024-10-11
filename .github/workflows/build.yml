@@ -54,24 +54,19 @@ jobs:
         run: |
           "$VS_INSTALL_PATH/VC/Auxiliary/Build/vcvarsall.bat" amd64
 
-      - name: Build Python with PGO optimization
+
+      - name: Build Python externa MSI installer
         run: |
           cd cpython
-          .\PCbuild\build.bat --pgo
+          .\Tools\msi\get_externals.bat
 
-      - name: Generate Documentation
+      - name: Build Python MSI installer
         run: |
           cd cpython
-          # Assurez-vous que la documentation est générée
-          make -C .\Tools\msi\Doc html
+          .\Tools\msi\build.bat -x64
 
-      - name: Build Documentation MSI installer
-        run: |
-          cd cpython
-          .\Tools\msi\Doc doc.wixproj /p:Configuration=Release
-
-      - name: Upload all Artifacts
+      - name: Upload all Artifacts last
         uses: actions/upload-artifact@v4
         with:
-          name: python-installer-artifacts
-          path: D:\a\cpython\cpython\*  # Mettez à jour ce chemin si nécessaire
+          name: python-all-last
+          path: D:\a\cpython\cpython\*
