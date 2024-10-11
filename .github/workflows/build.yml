@@ -57,14 +57,14 @@ jobs:
       - name: Build Python with PGO optimization
         run: |
           cd cpython
-          .\build.bat --pgo
+          .\PCbuild\build.bat --pgo
 
       - name: Build Python MSI installer
         run: |
-          .\build.bat --msi
+          .\PCbuild\build.bat --msi
 
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-msi
-          path: ./PCbuild
+          path: .\PCbuild\PCbuild
