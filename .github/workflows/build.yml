@@ -38,10 +38,6 @@ jobs:
           choco install visualstudio2022buildtools --params "'/Full /IncludeRecommended /IncludeOptional'"
           choco install wixtoolset
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
       - name: Configure environment for Visual Studio
         shell: bash
         run: |
