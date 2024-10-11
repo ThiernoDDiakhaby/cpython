@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-all-first
-          path: .\PCbuild\PCbuild\*
+          path: D:\a\cpython\cpython\*
 
       - name: Build Python MSI installer
         run: |
@@ -74,4 +74,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-all-last
-          path: .\PCbuild\PCbuild\*
+          path: D:\a\cpython\cpython\*
