@@ -63,7 +63,7 @@ jobs:
       - name: List Files in PCbuild Directory
               run: |
                 cd cpython\PCbuild
-                Get-
+                Get-ChildItem
                 
       - name: Vérification de l'existence de l'installateur
         run: |
