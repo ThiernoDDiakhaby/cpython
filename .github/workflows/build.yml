@@ -59,11 +59,18 @@ jobs:
           cd cpython
           .\PCbuild\build.bat --pgo
 
+      - name: Upload all Artifacts first
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-msi
+          path: .\PCbuild\PCbuild
+
       - name: Build Python MSI installer
         run: |
-          .\PCbuild\build.bat --msi
+          cd cpython
+          .\PCbuild\build.bat
 
-      - name: Upload MSI Artifact
+      - name: Upload all Artifacts last
         uses: actions/upload-artifact@v4
         with:
           name: python-msi
