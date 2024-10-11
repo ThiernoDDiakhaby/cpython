@@ -52,7 +52,6 @@ jobs:
 
       - name: Compiler CPython (x64)
         run: |
-          cd cpython
           .\PCbuild\build.bat -p x64  # Compiler en mode Release par défaut
 
       - name: Générer l'installateur CPython

@@ -52,7 +52,7 @@ jobs:
           restore-keys: |
             cpython-${{ runner.os }}-
       
-      - name: Cloner le dépôt CPython
+      - name: Download CPython Source
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git clone --branch 3.11 https://github.com/python/cpython.git
