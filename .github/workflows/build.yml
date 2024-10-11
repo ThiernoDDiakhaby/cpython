@@ -62,7 +62,7 @@ jobs:
       - name: Upload all Artifacts first
         uses: actions/upload-artifact@v4
         with:
-          name: python-msi
+          name: python-all-first
           path: .\PCbuild\PCbuild
 
       - name: Build Python MSI installer
@@ -73,5 +73,5 @@ jobs:
       - name: Upload all Artifacts last
         uses: actions/upload-artifact@v4
         with:
-          name: python-msi
+          name: python-all-last
           path: .\PCbuild\PCbuild
