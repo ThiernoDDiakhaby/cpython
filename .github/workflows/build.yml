@@ -40,7 +40,7 @@ jobs:
 
       - name: Install WiX Toolset
         run: |
-          choco install wixtoolset
+          choco install wixtoolset --version=3.5.0
 
       - name: Find Visual Studio installation
         id: vs_installation
