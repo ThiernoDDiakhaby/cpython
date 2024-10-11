@@ -37,10 +37,12 @@ jobs:
         run: |
           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
           Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools", "--add", "Microsoft.VisualStudio.Component.VC142.x86.x64", "--add", "Microsoft.VisualStudio.Component.VC143.x86.x64" -NoNewWindow -Wait
-
-      - name: Install WiX Toolset
+      
+      - name: Install WiX Toolset 3.5.0 Manually
         run: |
-          choco install wixtoolset --version=3.5.0 --allow-downgrade
+          Invoke-WebRequest -Uri "https://github.com/wixtoolset/wix3/releases/download/wix35/wix35.exe" -OutFile wix35.exe
+          Start-Process wix35.exe -ArgumentList "/silent", "/norestart" -Wait
+
 
       - name: Find Visual Studio installation
         id: vs_installation
