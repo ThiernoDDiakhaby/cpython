@@ -33,21 +33,16 @@ jobs:
           git clone --branch v3.11.10 https://github.com/python/cpython.git
           cd cpython
 
-      - name: Install Visual Studio Build Tools
+      - name: Install Visual Studio Build Tools 2022
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
-          Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
-
-      - name: Install WiX Toolset
-        run: |
+          choco install visualstudio2022buildtools --params "'/Full /IncludeRecommended /IncludeOptional'"
           choco install wixtoolset
 
-      - name: Configure environment for Visual Studio
-        shell: bash
+      - name: Find Visual Studio installation
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64
-
-
+          set VSINSTALLDIR=$(vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+          call "$VSINSTALLDIR\VC\Auxiliary\Build\vcvarsall.bat" amd64
+          
       - name: Build Python with PGO optimization
         run: |
           cd cpython
