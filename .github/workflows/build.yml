@@ -35,43 +35,29 @@ jobs:
 
       - name: Install Visual Studio Build Tools
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
-          Start-Process vs_buildtools.exe -ArgumentList "--quiet", "--norestart", "--wait", "--add", "Microsoft.VisualStudio.Workload.VCTools" -NoNewWindow -Wait
+          choco install visualstudio2022buildtools --params "'/Full /IncludeRecommended /IncludeOptional'"
+          choco install wixtoolset
 
-      - name: Build CPython
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Configure environment for Visual Studio
+        shell: bash
+        run: |
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64
+
+      - name: Build Python with PGO optimization
         run: |
           cd cpython
-          .\PCbuild\build.bat -p x64
-      - name: Upload Executables
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-executables
-          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\
-        
-          
-      - name: Générer l'installateur CPython
-        run: |
-          cd cpython
-          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\msbuild.exe" "PCbuild\pcbuild.proj" /p:Configuration=Release /t:Build /p:Platform=x64 || (Write-Error "Échec de la génération de l'installateur. Vérifiez les journaux pour plus de détails." && exit 1)
+          ./build.bat --pgo
 
-      - name: Télécharger les exécutables
-        uses: actions/upload-artifact@v4
-        with:
-          name: executables-python
-          path: D:\a\cpython\cpython\cpython\PCbuild\*
-
-      - name: List Files in PCbuild Directory
+      - name: Build Python MSI installer
         run: |
-          cd cpython\PCbuild
-          Get-ChildItem
-      - name: List Files in amd64 Directory
-        run: |
-          cd cpython\PCbuild\amd64
-          Get-ChildItem
+          ./build.bat --msi
 
-          
-      - name: Télécharger l'installateur MSI ARM64
-        uses: actions/upload-artifact@v4
+      - name: Upload MSI Artifact
+        uses: actions/upload-artifact@v2
         with:
-          name: python-arm64-installer
-          path: cpython\PCbuild\arm64\*.msi  # Chemin ajusté pour ARM64
+          name: python-msi
+          path: ./PCbuild/amd64/*.msi
