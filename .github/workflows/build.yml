@@ -58,7 +58,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: executables-python
-          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\*
+          path: D:\a\cpython\cpython\cpython\PCbuild\*
 
       - name: List Files in PCbuild Directory
         run: |
