@@ -30,7 +30,7 @@ jobs:
       
       - name: Download CPython Source
         run: |
-          git clone --branch v3.11.10 https://github.com/python/cpython.git
+          git clone --branch 3.11 https://github.com/python/cpython.git
           cd cpython
 
       - name: Install Visual Studio Build Tools
@@ -64,3 +64,9 @@ jobs:
         with:
           name: python-all-last
           path: D:\a\cpython\cpython\*
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-3.11.10-install
+          path: D:\a\cpython\cpython\cpython\PCbuild\amd64\en-us\*
