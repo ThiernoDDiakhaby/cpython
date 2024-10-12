@@ -186,14 +186,16 @@ jobs:
       - name: Configure CPython
         run: |
           .\configure --config-cache --with-pydebug --enable-shared
+      - name: Verify Makefile creation
+        run: |
+          if (-Not (Test-Path "Makefile")) {
+            Write-Host "Makefile not found. Configuration may have failed."
+            exit 1
+          }
       - name: Build CPython
         run: |
           mingw32-make -j4
-      - name: Upload all Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-installer-artifacts
-          path: D:\a\cpython\cpython\*
+
 
   build_macos:
     name: 'macOS'
